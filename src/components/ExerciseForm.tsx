@@ -13,7 +13,9 @@ const DIFFICULTY_RANGES = {
   facile: '5-8 reps',
   primaire: '3-5 reps',
   nouveau: '3 reps',
-};
+} as const;
+
+const DIFFICULTIES: Difficulty[] = ['nouveau', 'primaire', 'facile', 'moyen', 'difficile', 'extreme'];
 
 export function ExerciseForm({ onAdd }: Props) {
   const [name, setName] = useState('');
@@ -99,7 +101,7 @@ export function ExerciseForm({ onAdd }: Props) {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
-          <option value="">-- Choisir un tag --</option>
+          <option key="default" value="">-- Choisir un tag --</option>
           {tags.map((tag) => (
             <option key={tag} value={tag}>
               {tag}
@@ -113,7 +115,7 @@ export function ExerciseForm({ onAdd }: Props) {
           Niveau de difficulté
         </label>
         <div className="grid grid-cols-3 gap-4">
-          {(['nouveau', 'primaire', 'facile', 'moyen', 'difficile', 'extreme'] as const).map((level) => (
+          {DIFFICULTIES.map((level) => (
             <label
               key={level}
               className={`

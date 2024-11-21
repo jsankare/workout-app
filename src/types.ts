@@ -12,3 +12,10 @@ export interface NewExercise {
   tag: string;
   difficulty: Difficulty;
 }
+
+export interface ExerciseLog {
+  exerciseId: string;
+  name: string;
+  totalReps: number;
+  count: number;
+}

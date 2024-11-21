@@ -3,8 +3,9 @@ import { nanoid } from 'nanoid';
 import { ExerciseForm } from './components/ExerciseForm';
 import { ExerciseList } from './components/ExerciseList';
 import { RouletteWheel } from './components/RouletteWheel';
+import { ExerciseLog } from './components/ExerciseLog';
 import { getAllExercises, addExercise, deleteExercise } from './db';
-import type { Exercise, NewExercise, Difficulty } from './types';
+import type { Exercise, NewExercise, Difficulty, ExerciseLog as ExerciseLogType } from './types';
 
 const SPIN_DURATION = 2000;
 
@@ -15,7 +16,7 @@ const DIFFICULTY_RANGES = {
   facile: { min: 5, max: 8 },
   primaire: { min: 3, max: 5 },
   nouveau: { min: 3, max: 3 }
-};
+} as const;
 
 function App() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -23,7 +24,8 @@ function App() {
   const [reps, setReps] = useState<number | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null); // Pour filtrer par tag
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [logs, setLogs] = useState<ExerciseLogType[]>([]);
 
   useEffect(() => {
     const loadExercises = async () => {
@@ -64,17 +66,16 @@ function App() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
-  // Liste des exercices filtrés
   const filteredExercises = exercises.filter(
     exercise =>
       exercise.tag && (!selectedTag || exercise.tag.trim().toLowerCase() === selectedTag.trim().toLowerCase())
-  );  
+  );
 
   const handleSpin = useCallback(() => {
-  if (filteredExercises.length === 0 || isSpinning) {
-    console.warn('Aucun exercice filtré disponible pour tourner la roue.');
-    return;
-  }
+    if (filteredExercises.length === 0 || isSpinning) {
+      console.warn('Aucun exercice filtré disponible pour tourner la roue.');
+      return;
+    }
 
     setIsSpinning(true);
     setSelectedExercise(null);
@@ -91,6 +92,45 @@ function App() {
     }, SPIN_DURATION);
   }, [filteredExercises, isSpinning]);
 
+  const handleCompleteExercise = () => {
+    if (!selectedExercise || reps === null) return;
+
+    setLogs(prevLogs => {
+      const existingLog = prevLogs.find(log => log.exerciseId === selectedExercise.id);
+      
+      if (existingLog) {
+        return prevLogs.map(log => 
+          log.exerciseId === selectedExercise.id
+            ? {
+                ...log,
+                totalReps: log.totalReps + reps,
+                count: log.count + 1
+              }
+            : log
+        );
+      }
+
+      return [...prevLogs, {
+        exerciseId: selectedExercise.id,
+        name: selectedExercise.name,
+        totalReps: reps,
+        count: 1
+      }];
+    });
+
+    handleSpin();
+  };
+
+  const handleSkipExercise = () => {
+    handleSpin();
+  };
+
+  const handleClearLogs = () => {
+    setLogs([]);
+  };
+
+  const uniqueTags = Array.from(new Set(exercises.map(ex => ex.tag)));
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -101,14 +141,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
-
       <header className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Workout Roulette</h1>
         <p className="text-gray-600">Tournez la roue et effectuez les exercices, puis recommencez !</p>
       </header>
 
-      <div className="max-w-4xl mx-auto space-y-8 flex flex-col">
-
+      <div className="max-w-4xl mx-auto space-y-8">
         <div>
           <label htmlFor="tagFilter" className="block text-gray-700 font-medium">
             Filtrer par tag :
@@ -119,9 +157,9 @@ function App() {
             onChange={(e) => setSelectedTag(e.target.value || null)}
             className="mt-2 p-2 border rounded w-full"
           >
-            <option value="">Tous les exercices</option>
-            {Array.from(new Set(exercises.map(ex => ex.tag))).map(tag => (
-              <option key={tag} value={tag}>
+            <option key="all" value="">Tous les exercices</option>
+            {uniqueTags.map(tag => (
+              <option key={`filter-${tag}`} value={tag}>
                 {tag}
               </option>
             ))}
@@ -129,25 +167,25 @@ function App() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-
           <div className="space-y-6">
             <ExerciseForm onAdd={handleAddExercise} />
+            <ExerciseLog logs={logs} onClearLogs={handleClearLogs} />
           </div>
 
-          <RouletteWheel
+          <div className="space-y-6">
+            <RouletteWheel
               selectedExercise={selectedExercise}
-              filteredExercises={filteredExercises} // Liste filtrée
+              filteredExercises={filteredExercises}
               reps={reps}
               isSpinning={isSpinning}
               onSpin={handleSpin}
+              onComplete={handleCompleteExercise}
+              onSkip={handleSkipExercise}
             />
+          </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center w-full">
-
-          </div>
-          <ExerciseList exercises={exercises} onDelete={handleDeleteExercise} />
-          <p>toto</p>
+        <ExerciseList exercises={exercises} onDelete={handleDeleteExercise} />
       </div>
     </div>
   );

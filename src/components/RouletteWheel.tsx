@@ -7,6 +7,8 @@ interface Props {
   reps: number | null;
   isSpinning: boolean;
   onSpin: (filteredExercises: Exercise[]) => void;
+  onComplete: () => void;
+  onSkip: () => void;
   filteredExercises: Exercise[];
 }
 
@@ -22,7 +24,15 @@ const getDifficultyColor = (difficulty: string) => {
   }
 };
 
-export function RouletteWheel({ selectedExercise, reps, isSpinning, onSpin, filteredExercises }: Props) {
+export function RouletteWheel({ 
+  selectedExercise, 
+  reps, 
+  isSpinning, 
+  onSpin, 
+  onComplete,
+  onSkip,
+  filteredExercises 
+}: Props) {
   const gradientColors = selectedExercise 
     ? getDifficultyColor(selectedExercise.difficulty)
     : 'from-blue-500 to-purple-600';
@@ -61,7 +71,6 @@ export function RouletteWheel({ selectedExercise, reps, isSpinning, onSpin, filt
 
   return (
     <div className="text-center space-y-6">
-
       <div className="space-y-4">
         <p className="text-lg font-bold text-gray-700">Temps : {formatTime(time)}</p>
         <div className="flex justify-center gap-4">
@@ -114,21 +123,38 @@ export function RouletteWheel({ selectedExercise, reps, isSpinning, onSpin, filt
         </div>
       </div>
 
-      <button
-        onClick={() => onSpin(filteredExercises)}
-        disabled={isSpinning}
-        className={`
-          px-8 py-4 text-lg font-semibold rounded-full
-          ${
-            isSpinning
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
-          }
-          transition-all duration-300 shadow-md hover:shadow-lg
-        `}
-      >
-        {isSpinning ? 'Preparez-vous ..' : `C'est parti !`}
-      </button>
+      {selectedExercise ? (
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onComplete}
+            className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            Terminé
+          </button>
+          <button
+            onClick={onSkip}
+            className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Passer
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => onSpin(filteredExercises)}
+          disabled={isSpinning}
+          className={`
+            px-8 py-4 text-lg font-semibold rounded-full
+            ${
+              isSpinning
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
+            }
+            transition-all duration-300 shadow-md hover:shadow-lg
+          `}
+        >
+          {isSpinning ? 'Preparez-vous ..' : `C'est parti !`}
+        </button>
+      )}
     </div>
   );
 }

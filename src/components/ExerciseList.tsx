@@ -14,16 +14,15 @@ const DIFFICULTY_RANGES = {
   facile: "5-8 reps",
   primaire: "3-5 reps",
   nouveau: "3 reps",
-};
+} as const;
 
 export function ExerciseList({ exercises, onDelete }: Props) {
-
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const uniqueTags = Array.from(new Set(exercises.map((exercise) => exercise.tag))); // Liste unique de tags
+  const uniqueTags = Array.from(new Set(exercises.map((exercise) => exercise.tag)));
   const filteredExercises = selectedTag
     ? exercises.filter((exercise) => exercise.tag === selectedTag)
-    : exercises; // Filtre les exercices si un tag est sélectionné
+    : exercises;
 
   if (exercises.length === 0) {
     return (
@@ -36,24 +35,24 @@ export function ExerciseList({ exercises, onDelete }: Props) {
   }
 
   return (
-    <div className=" w-full space-y-4">
+    <div className="w-full space-y-4">
       <div className="flex items-center gap-4">
         <p>Voir certains exercices uniquement</p>
         <select
           className="px-4 py-2 border rounded-lg bg-white shadow-sm focus:ring focus:ring-blue-300"
           value={selectedTag || ""}
-          onChange={(e) => setSelectedTag(e.target.value || null)} // Met à jour le tag sélectionné
+          onChange={(e) => setSelectedTag(e.target.value || null)}
         >
-          <option value="">Tous les tags</option>
+          <option key="all" value="">Tous les tags</option>
           {uniqueTags.map((tag) => (
-            <option key={tag} value={tag}>
+            <option key={`tag-${tag}`} value={tag}>
               {tag}
             </option>
           ))}
         </select>
         {selectedTag && (
           <button
-            onClick={() => setSelectedTag(null)} // Réinitialise le filtre
+            onClick={() => setSelectedTag(null)}
             className="px-4 py-2 text-sm text-white bg-gray-500 rounded-lg hover:bg-gray-600"
           >
             Réinitialiser
