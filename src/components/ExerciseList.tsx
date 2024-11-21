@@ -1,4 +1,4 @@
-import { useState } from "react"; 
+import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import type { Exercise } from "../types";
 
@@ -26,8 +26,8 @@ export function ExerciseList({ exercises, onDelete }: Props) {
 
   if (exercises.length === 0) {
     return (
-      <div className="text-center p-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <p className="text-gray-500">
+      <div className="text-center p-8 bg-gray-800 rounded-lg border-2 border-dashed border-purple-500/30">
+        <p className="text-purple-300">
           Aucun exercice pour le moment, ajoutez-en et tournez la roue !
         </p>
       </div>
@@ -37,15 +37,15 @@ export function ExerciseList({ exercises, onDelete }: Props) {
   return (
     <div className="w-full space-y-4">
       <div className="flex items-center gap-4">
-        <p>Voir certains exercices uniquement</p>
+        <p className="text-purple-300">Voir certains exercices uniquement</p>
         <select
-          className="px-4 py-2 border rounded-lg bg-white shadow-sm focus:ring focus:ring-blue-300"
+          className="px-4 py-2 bg-gray-800 text-purple-300 border border-purple-500 rounded-lg focus:ring-2 focus:ring-purple-400"
           value={selectedTag || ""}
           onChange={(e) => setSelectedTag(e.target.value || null)}
         >
-          <option key="all" value="">Tous les tags</option>
+          <option value="">Tous les tags</option>
           {uniqueTags.map((tag) => (
-            <option key={`tag-${tag}`} value={tag}>
+            <option key={tag} value={tag}>
               {tag}
             </option>
           ))}
@@ -53,7 +53,7 @@ export function ExerciseList({ exercises, onDelete }: Props) {
         {selectedTag && (
           <button
             onClick={() => setSelectedTag(null)}
-            className="px-4 py-2 text-sm text-white bg-gray-500 rounded-lg hover:bg-gray-600"
+            className="px-4 py-2 text-sm text-purple-200 bg-gray-700 rounded-lg hover:bg-gray-600"
           >
             Réinitialiser
           </button>
@@ -61,52 +61,54 @@ export function ExerciseList({ exercises, onDelete }: Props) {
       </div>
 
       {filteredExercises.length === 0 ? (
-        <div className="text-center p-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <p className="text-gray-500">
+        <div className="text-center p-8 bg-gray-800 rounded-lg border-2 border-dashed border-purple-500/30">
+          <p className="text-purple-300">
             Aucun exercice trouvé pour le tag sélectionné.
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredExercises.map((exercise) => (
             <div
               key={exercise.id}
-              className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              className="bg-gray-800 p-4 rounded-lg border border-purple-500/20 hover:border-purple-500/50 transition-all"
             >
-              <div>
-                <h3 className="font-medium text-gray-900">{exercise.name}</h3>
-                <p className="text-sm text-gray-500 italic">Tag : {exercise.tag}</p>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-sm px-2 py-0.5 rounded-full ${
-                      exercise.difficulty === "facile"
-                        ? "bg-green-100 text-green-700"
-                        : exercise.difficulty === "moyen"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : exercise.difficulty === "difficile"
-                        ? "bg-orange-100 text-orange-700"
-                        : exercise.difficulty === "extreme"
-                        ? "bg-red-100 text-red-700"
-                        : exercise.difficulty === "primaire"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {exercise.difficulty.charAt(0).toUpperCase() +
-                      exercise.difficulty.slice(1)}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {DIFFICULTY_RANGES[exercise.difficulty]}
-                  </span>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-medium text-purple-200">{exercise.name}</h3>
+                  <p className="text-sm text-purple-400 italic">Tag : {exercise.tag}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span
+                      className={`text-sm px-2 py-0.5 rounded-full ${
+                        exercise.difficulty === "facile"
+                          ? "bg-green-900/50 text-green-300"
+                          : exercise.difficulty === "moyen"
+                          ? "bg-yellow-900/50 text-yellow-300"
+                          : exercise.difficulty === "difficile"
+                          ? "bg-orange-900/50 text-orange-300"
+                          : exercise.difficulty === "extreme"
+                          ? "bg-red-900/50 text-red-300"
+                          : exercise.difficulty === "primaire"
+                          ? "bg-blue-900/50 text-blue-300"
+                          : "bg-gray-900/50 text-gray-300"
+                      }`}
+                    >
+                      {exercise.difficulty.charAt(0).toUpperCase() +
+                        exercise.difficulty.slice(1)}
+                    </span>
+                    <span className="text-sm text-purple-400">
+                      {DIFFICULTY_RANGES[exercise.difficulty]}
+                    </span>
+                  </div>
                 </div>
+                <button
+                  onClick={() => onDelete(exercise.id)}
+                  className="text-purple-400 hover:text-red-400 transition-colors p-2"
+                  aria-label="Delete exercise"
+                >
+                  <Trash2 size={20} />
+                </button>
               </div>
-              <button
-                onClick={() => onDelete(exercise.id)}
-                className="text-red-500 hover:text-red-700 transition-colors p-2"
-                aria-label="Delete exercise"
-              >
-                <Trash2 size={20} />
-              </button>
             </div>
           ))}
         </div>

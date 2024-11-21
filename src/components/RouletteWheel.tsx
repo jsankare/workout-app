@@ -20,7 +20,7 @@ const getDifficultyColor = (difficulty: string) => {
     case 'extreme': return 'from-red-500 to-rose-600';
     case 'primaire': return 'from-blue-500 to-indigo-600';
     case 'nouveau': return 'from-gray-400 to-gray-500';
-    default: return 'from-gray-500 to-gray-700';
+    default: return 'from-purple-500 to-purple-700';
   }
 };
 
@@ -35,7 +35,7 @@ export function RouletteWheel({
 }: Props) {
   const gradientColors = selectedExercise 
     ? getDifficultyColor(selectedExercise.difficulty)
-    : 'from-blue-500 to-purple-600';
+    : 'from-purple-500 to-purple-700';
 
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
@@ -70,9 +70,9 @@ export function RouletteWheel({
   };
 
   return (
-    <div className="text-center space-y-6">
+    <div className="text-center space-y-6 bg-gray-800 p-8 rounded-lg shadow-xl border border-purple-500/20">
       <div className="space-y-4">
-        <p className="text-lg font-bold text-gray-700">Temps : {formatTime(time)}</p>
+        <p className="text-lg font-bold text-purple-300">Temps : {formatTime(time)}</p>
         <div className="flex justify-center gap-4">
           <button
             onClick={handleStartStop}
@@ -87,7 +87,7 @@ export function RouletteWheel({
           {!isRunning && time > 0 && (
             <button
               onClick={handleReset}
-              className="px-8 py-4 text-lg font-semibold rounded-full bg-gray-500 text-white hover:bg-gray-600 transition-all duration-300 shadow-md hover:shadow-lg"
+              className="px-8 py-4 text-lg font-semibold rounded-full bg-gray-600 text-white hover:bg-gray-700 transition-all duration-300 shadow-md hover:shadow-lg"
             >
               Reset
             </button>
@@ -100,25 +100,25 @@ export function RouletteWheel({
           isSpinning ? 'animate-spin' : ''
         }`}
       >
-        <div className="w-56 h-56 rounded-full bg-white flex items-center justify-center p-6">
+        <div className="w-56 h-56 rounded-full bg-gray-800 flex items-center justify-center p-6 border-4 border-purple-500/20">
           {selectedExercise ? (
             <div className="space-y-2">
-              <h2 className="text-xl font-bold text-gray-900">{selectedExercise.name}</h2>
-              <p className="text-3xl font-bold text-blue-600">{reps} reps</p>
-              <p className="text-sm text-gray-500 italic">{selectedExercise.tag}</p>
+              <h2 className="text-xl font-bold text-purple-200">{selectedExercise.name}</h2>
+              <p className="text-3xl font-bold text-purple-300">{reps} reps</p>
+              <p className="text-sm text-purple-400 italic">{selectedExercise.tag}</p>
               <p className={`text-sm font-medium capitalize
-                ${selectedExercise.difficulty === 'facile' ? 'text-green-600' : ''}
-                ${selectedExercise.difficulty === 'moyen' ? 'text-yellow-600' : ''}
-                ${selectedExercise.difficulty === 'difficile' ? 'text-orange-600' : ''}
-                ${selectedExercise.difficulty === 'extreme' ? 'text-red-600' : ''}
-                ${selectedExercise.difficulty === 'primaire' ? 'text-blue-600' : ''}
-                ${selectedExercise.difficulty === 'nouveau' ? 'text-gray-600' : ''}
+                ${selectedExercise.difficulty === 'facile' ? 'text-green-400' : ''}
+                ${selectedExercise.difficulty === 'moyen' ? 'text-yellow-400' : ''}
+                ${selectedExercise.difficulty === 'difficile' ? 'text-orange-400' : ''}
+                ${selectedExercise.difficulty === 'extreme' ? 'text-red-400' : ''}
+                ${selectedExercise.difficulty === 'primaire' ? 'text-blue-400' : ''}
+                ${selectedExercise.difficulty === 'nouveau' ? 'text-gray-400' : ''}
               `}>
                 {selectedExercise.difficulty}
               </p>
             </div>
           ) : (
-            <Dumbbell size={48} className="text-gray-400" />
+            <Dumbbell size={48} className="text-purple-400" />
           )}
         </div>
       </div>
@@ -127,13 +127,13 @@ export function RouletteWheel({
         <div className="flex justify-center gap-4">
           <button
             onClick={onComplete}
-            className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             Terminé
           </button>
           <button
             onClick={onSkip}
-            className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
             Passer
           </button>
@@ -146,8 +146,8 @@ export function RouletteWheel({
             px-8 py-4 text-lg font-semibold rounded-full
             ${
               isSpinning
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
+                ? 'bg-gray-600 cursor-not-allowed'
+                : 'bg-gradient-to-r from-purple-500 to-purple-700 text-white hover:from-purple-600 hover:to-purple-800'
             }
             transition-all duration-300 shadow-md hover:shadow-lg
           `}

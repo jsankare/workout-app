@@ -4,6 +4,7 @@ import { ExerciseForm } from './components/ExerciseForm';
 import { ExerciseList } from './components/ExerciseList';
 import { RouletteWheel } from './components/RouletteWheel';
 import { ExerciseLog } from './components/ExerciseLog';
+import { TagFilter } from './components/Tagfilter';
 import { getAllExercises, addExercise, deleteExercise } from './db';
 import type { Exercise, NewExercise, Difficulty, ExerciseLog as ExerciseLogType } from './types';
 
@@ -25,13 +26,19 @@ function App() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [excludedTags, setExcludedTags] = useState<string[]>([]);
   const [logs, setLogs] = useState<ExerciseLogType[]>([]);
+  const [existingTags, setExistingTags] = useState<string[]>([]);
 
   useEffect(() => {
     const loadExercises = async () => {
       try {
         const loadedExercises = await getAllExercises();
         setExercises(loadedExercises);
+        
+        // Extract unique tags from loaded exercises
+        const tags = Array.from(new Set(loadedExercises.map(ex => ex.tag)));
+        setExistingTags(tags);
       } catch (error) {
         console.error('Erreur lors du chargement des exercices:', error);
       } finally {
@@ -47,6 +54,9 @@ function App() {
     try {
       await addExercise(exercise);
       setExercises(prev => [...prev, exercise]);
+      if (!existingTags.includes(exercise.tag)) {
+        setExistingTags(prev => [...prev, exercise.tag]);
+      }
     } catch (error) {
       console.error(`Erreur lors de l'ajout de l'exercice:`, error);
     }
@@ -56,6 +66,11 @@ function App() {
     try {
       await deleteExercise(id);
       setExercises(prev => prev.filter(exercise => exercise.id !== id));
+      
+      // Update existing tags after deletion
+      const remainingExercises = exercises.filter(ex => ex.id !== id);
+      const remainingTags = Array.from(new Set(remainingExercises.map(ex => ex.tag)));
+      setExistingTags(remainingTags);
     } catch (error) {
       console.error(`Erreur lors de la suppression de l'exercice:`, error);
     }
@@ -66,10 +81,11 @@ function App() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
-  const filteredExercises = exercises.filter(
-    exercise =>
-      exercise.tag && (!selectedTag || exercise.tag.trim().toLowerCase() === selectedTag.trim().toLowerCase())
-  );
+  const filteredExercises = exercises.filter(exercise => {
+    const matchesSelectedTag = !selectedTag || exercise.tag.trim().toLowerCase() === selectedTag.trim().toLowerCase();
+    const isNotExcluded = !excludedTags.includes(exercise.tag);
+    return matchesSelectedTag && isNotExcluded;
+  });
 
   const handleSpin = useCallback(() => {
     if (filteredExercises.length === 0 || isSpinning) {
@@ -82,8 +98,7 @@ function App() {
     setReps(null);
 
     setTimeout(() => {
-      const randomExercise =
-        filteredExercises[Math.floor(Math.random() * filteredExercises.length)];
+      const randomExercise = filteredExercises[Math.floor(Math.random() * filteredExercises.length)];
       const randomReps = getRandomReps(randomExercise.difficulty);
 
       setSelectedExercise(randomExercise);
@@ -101,11 +116,7 @@ function App() {
       if (existingLog) {
         return prevLogs.map(log => 
           log.exerciseId === selectedExercise.id
-            ? {
-                ...log,
-                totalReps: log.totalReps + reps,
-                count: log.count + 1
-              }
+            ? { ...log, totalReps: log.totalReps + reps, count: log.count + 1 }
             : log
         );
       }
@@ -129,62 +140,55 @@ function App() {
     setLogs([]);
   };
 
-  const uniqueTags = Array.from(new Set(exercises.map(ex => ex.tag)));
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-600">Chargement des exercices ..</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-purple-300">Chargement des exercices ..</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4">
-      <header className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Workout Roulette</h1>
-        <p className="text-gray-600">Tournez la roue et effectuez les exercices, puis recommencez !</p>
+    <div className="min-h-screen bg-gray-900 py-12 px-4">
+      <header className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-purple-300 mb-2">Workout Roulette</h1>
+        <p className="text-purple-200 opacity-75">Tournez la roue et effectuez les exercices, puis recommencez !</p>
       </header>
 
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div>
-          <label htmlFor="tagFilter" className="block text-gray-700 font-medium">
-            Filtrer par tag :
-          </label>
-          <select
-            id="tagFilter"
-            value={selectedTag || ''}
-            onChange={(e) => setSelectedTag(e.target.value || null)}
-            className="mt-2 p-2 border rounded w-full"
-          >
-            <option key="all" value="">Tous les exercices</option>
-            {uniqueTags.map(tag => (
-              <option key={`filter-${tag}`} value={tag}>
-                {tag}
-              </option>
-            ))}
-          </select>
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-8">
+          <ExerciseForm onAdd={handleAddExercise} existingTags={existingTags} />
+          <ExerciseLog logs={logs} onClearLogs={handleClearLogs} />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <ExerciseForm onAdd={handleAddExercise} />
-            <ExerciseLog logs={logs} onClearLogs={handleClearLogs} />
-          </div>
+        <div className="space-y-8">
+          <RouletteWheel
+            selectedExercise={selectedExercise}
+            filteredExercises={filteredExercises}
+            reps={reps}
+            isSpinning={isSpinning}
+            onSpin={handleSpin}
+            onComplete={handleCompleteExercise}
+            onSkip={handleSkipExercise}
+          />
 
-          <div className="space-y-6">
-            <RouletteWheel
-              selectedExercise={selectedExercise}
-              filteredExercises={filteredExercises}
-              reps={reps}
-              isSpinning={isSpinning}
-              onSpin={handleSpin}
-              onComplete={handleCompleteExercise}
-              onSkip={handleSkipExercise}
-            />
-          </div>
+          <TagFilter
+            existingTags={existingTags}
+            selectedTag={selectedTag}
+            excludedTags={excludedTags}
+            onSelectTag={setSelectedTag}
+            onToggleExcludeTag={(tag) => {
+              setExcludedTags(prev =>
+                prev.includes(tag)
+                  ? prev.filter(t => t !== tag)
+                  : [...prev, tag]
+              );
+            }}
+          />
         </div>
+      </div>
 
+      <div className="mt-12">
         <ExerciseList exercises={exercises} onDelete={handleDeleteExercise} />
       </div>
     </div>

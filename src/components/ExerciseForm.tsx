@@ -4,6 +4,7 @@ import type { NewExercise, Difficulty } from '../types';
 
 interface Props {
   onAdd: (exercise: NewExercise) => void;
+  existingTags: string[];
 }
 
 const DIFFICULTY_RANGES = {
@@ -17,33 +18,27 @@ const DIFFICULTY_RANGES = {
 
 const DIFFICULTIES: Difficulty[] = ['nouveau', 'primaire', 'facile', 'moyen', 'difficile', 'extreme'];
 
-export function ExerciseForm({ onAdd }: Props) {
+export function ExerciseForm({ onAdd, existingTags }: Props) {
   const [name, setName] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('moyen');
   const [tagInput, setTagInput] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !selectedTag) return;
+    if (!name || (!selectedTag && !tagInput)) return;
 
-    onAdd({ name, tag: selectedTag, difficulty });
+    const finalTag = selectedTag || tagInput;
+    onAdd({ name, tag: finalTag, difficulty });
     setName('');
+    setTagInput('');
     setSelectedTag('');
   };
 
-  const handleAddTag = () => {
-    if (tagInput && !tags.includes(tagInput)) {
-      setTags((prevTags) => [...prevTags, tagInput]);
-      setTagInput('');
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+    <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-6 rounded-lg shadow-xl border border-purple-500/20">
       <div className="space-y-2">
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="name" className="block text-sm font-medium text-purple-300">
           Nom de l'exercice
         </label>
         <input
@@ -51,67 +46,55 @@ export function ExerciseForm({ onAdd }: Props) {
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-gray-700 text-purple-100 border border-purple-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
           placeholder="Pompes, abdos, etc .."
           required
         />
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="tagInput" className="block text-sm font-medium text-gray-700">
-          Ajouter un tag
-        </label>
-        <div className="flex gap-2">
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="existingTag" className="block text-sm font-medium text-purple-300 mb-2">
+            Sélectionner un tag existant
+          </label>
+          <select
+            id="existingTag"
+            value={selectedTag}
+            onChange={(e) => {
+              setSelectedTag(e.target.value);
+              setTagInput('');
+            }}
+            className="w-full px-3 py-2 bg-gray-700 text-purple-100 border border-purple-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
+          >
+            <option value="">-- Choisir un tag --</option>
+            {existingTags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="tagInput" className="block text-sm font-medium text-purple-300 mb-2">
+            Ou créer un nouveau tag
+          </label>
           <input
             type="text"
             id="tagInput"
             value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            className="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => {
+              setTagInput(e.target.value);
+              setSelectedTag('');
+            }}
+            className="w-full px-3 py-2 bg-gray-700 text-purple-100 border border-purple-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
             placeholder="Ex: Fesses, Bras"
           />
-          <button
-            type="button"
-            onClick={handleAddTag}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-full border border-gray-300"
-            >
-              {tag}
-            </span>
-          ))}
         </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="tag" className="block text-sm font-medium text-gray-700">
-          Sélectionner un tag
-        </label>
-        <select
-          id="tag"
-          value={selectedTag}
-          onChange={(e) => setSelectedTag(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        >
-          <option key="default" value="">-- Choisir un tag --</option>
-          {tags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="space-y-2 w-full">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-purple-300 mb-2">
           Niveau de difficulté
         </label>
         <div className="grid grid-cols-3 gap-4">
@@ -123,8 +106,8 @@ export function ExerciseForm({ onAdd }: Props) {
                 border-2 transition-all
                 ${
                   difficulty === level
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-purple-500 bg-purple-900/50 text-purple-300'
+                    : 'border-gray-700 hover:border-purple-500/50'
                 }
               `}
             >
@@ -137,8 +120,8 @@ export function ExerciseForm({ onAdd }: Props) {
                 className="sr-only"
               />
               <div className="text-center">
-                <div className="font-medium capitalize">{level}</div>
-                <div className="text-xs text-gray-500">{DIFFICULTY_RANGES[level]}</div>
+                <div className="font-medium capitalize text-purple-200">{level}</div>
+                <div className="text-xs text-purple-400">{DIFFICULTY_RANGES[level]}</div>
               </div>
             </label>
           ))}
@@ -147,7 +130,7 @@ export function ExerciseForm({ onAdd }: Props) {
 
       <button
         type="submit"
-        className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+        className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
       >
         <Plus size={20} />
         Ajouter un exercice

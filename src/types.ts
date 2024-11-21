@@ -19,3 +19,25 @@ export interface ExerciseLog {
   totalReps: number;
   count: number;
 }
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  requirement: number;
+  currentProgress: number;
+  category: 'reps' | 'variety' | 'time' | 'streak' | 'difficulty';
+  unlockedAt?: number;
+}
+
+export interface WorkoutStats {
+  totalReps: number;
+  totalTime: number;
+  uniqueExercises: Set<string>;
+  lastWorkout?: number;
+  currentStreak: number;
+  longestStreak: number;
+  workoutDays: Set<string>;
+  difficultyCount: Record<Difficulty, number>;
+}
