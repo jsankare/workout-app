@@ -35,7 +35,7 @@ const INITIAL_ACHIEVEMENTS: Achievement[] = [
     description: 'Complétez votre premier exercice',
     icon: '🎯',
     requirement: 1,
-    currentProgress: 0,
+    currentProgress: 1,
     category: 'reps'
   },
   {
@@ -44,7 +44,7 @@ const INITIAL_ACHIEVEMENTS: Achievement[] = [
     description: 'Essayez 10 exercices différents',
     icon: '🎨',
     requirement: 10,
-    currentProgress: 0,
+    currentProgress: 2,
     category: 'variety'
   },
   {
@@ -53,7 +53,7 @@ const INITIAL_ACHIEVEMENTS: Achievement[] = [
     description: 'Accumulez 1000 répétitions',
     icon: '👑',
     requirement: 1000,
-    currentProgress: 0,
+    currentProgress: 45,
     category: 'reps'
   }
 ];
