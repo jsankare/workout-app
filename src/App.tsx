@@ -6,23 +6,33 @@ import { RouletteWheel } from './components/RouletteWheel';
 import { ExerciseLog } from './components/ExerciseLog';
 import { TagFilter } from './components/Tagfilter';
 import { getAllExercises, addExercise, deleteExercise } from './db';
-import type { Exercise, NewExercise, Difficulty, ExerciseLog as ExerciseLogType } from './types';
+import type { Exercise, NewExercise, Difficulty, ExerciseLog as ExerciseLogType, MeasureType } from './types';
 
 const SPIN_DURATION = 2000;
 
 const DIFFICULTY_RANGES = {
-  extreme: { min: 10, max: 25 },
-  difficile: { min: 7, max: 15 },
-  moyen: { min: 6, max: 9 },
-  facile: { min: 5, max: 8 },
-  primaire: { min: 3, max: 5 },
-  nouveau: { min: 3, max: 3 }
+  reps: {
+    extreme: { min: 10, max: 25 },
+    difficile: { min: 7, max: 15 },
+    moyen: { min: 6, max: 9 },
+    facile: { min: 5, max: 8 },
+    primaire: { min: 3, max: 5 },
+    nouveau: { min: 3, max: 3 }
+  },
+  time: {
+    extreme: { min: 60, max: 120 },
+    difficile: { min: 45, max: 90 },
+    moyen: { min: 30, max: 60 },
+    facile: { min: 20, max: 45 },
+    primaire: { min: 15, max: 30 },
+    nouveau: { min: 15, max: 15 }
+  }
 } as const;
 
 function App() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
-  const [reps, setReps] = useState<number | null>(null);
+  const [amount, setAmount] = useState<number | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -35,8 +45,6 @@ function App() {
       try {
         const loadedExercises = await getAllExercises();
         setExercises(loadedExercises);
-        
-        // Extract unique tags from loaded exercises
         const tags = Array.from(new Set(loadedExercises.map(ex => ex.tag)));
         setExistingTags(tags);
       } catch (error) {
@@ -66,8 +74,6 @@ function App() {
     try {
       await deleteExercise(id);
       setExercises(prev => prev.filter(exercise => exercise.id !== id));
-      
-      // Update existing tags after deletion
       const remainingExercises = exercises.filter(ex => ex.id !== id);
       const remainingTags = Array.from(new Set(remainingExercises.map(ex => ex.tag)));
       setExistingTags(remainingTags);
@@ -76,8 +82,8 @@ function App() {
     }
   };
 
-  const getRandomReps = (difficulty: Difficulty) => {
-    const { min, max } = DIFFICULTY_RANGES[difficulty];
+  const getRandomAmount = (difficulty: Difficulty, measureType: MeasureType) => {
+    const { min, max } = DIFFICULTY_RANGES[measureType][difficulty];
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
@@ -95,20 +101,20 @@ function App() {
 
     setIsSpinning(true);
     setSelectedExercise(null);
-    setReps(null);
+    setAmount(null);
 
     setTimeout(() => {
       const randomExercise = filteredExercises[Math.floor(Math.random() * filteredExercises.length)];
-      const randomReps = getRandomReps(randomExercise.difficulty);
+      const randomAmount = getRandomAmount(randomExercise.difficulty, randomExercise.measureType);
 
       setSelectedExercise(randomExercise);
-      setReps(randomReps);
+      setAmount(randomAmount);
       setIsSpinning(false);
     }, SPIN_DURATION);
   }, [filteredExercises, isSpinning]);
 
   const handleCompleteExercise = () => {
-    if (!selectedExercise || reps === null) return;
+    if (!selectedExercise || amount === null) return;
 
     setLogs(prevLogs => {
       const existingLog = prevLogs.find(log => log.exerciseId === selectedExercise.id);
@@ -116,7 +122,7 @@ function App() {
       if (existingLog) {
         return prevLogs.map(log => 
           log.exerciseId === selectedExercise.id
-            ? { ...log, totalReps: log.totalReps + reps, count: log.count + 1 }
+            ? { ...log, totalAmount: log.totalAmount + amount, count: log.count + 1 }
             : log
         );
       }
@@ -124,7 +130,8 @@ function App() {
       return [...prevLogs, {
         exerciseId: selectedExercise.id,
         name: selectedExercise.name,
-        totalReps: reps,
+        totalAmount: amount,
+        measureType: selectedExercise.measureType,
         count: 1
       }];
     });
@@ -165,7 +172,7 @@ function App() {
           <RouletteWheel
             selectedExercise={selectedExercise}
             filteredExercises={filteredExercises}
-            reps={reps}
+            amount={amount}
             isSpinning={isSpinning}
             onSpin={handleSpin}
             onComplete={handleCompleteExercise}

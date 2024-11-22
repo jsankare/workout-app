@@ -1,10 +1,10 @@
 import { Dumbbell } from 'lucide-react';
 import type { Exercise } from '../types';
-import { useState, useEffect } from 'react';
+import { Timer } from './Timer';
 
 interface Props {
   selectedExercise: Exercise | null;
-  reps: number | null;
+  amount: number | null;
   isSpinning: boolean;
   onSpin: (filteredExercises: Exercise[]) => void;
   onComplete: () => void;
@@ -26,7 +26,7 @@ const getDifficultyColor = (difficulty: string) => {
 
 export function RouletteWheel({ 
   selectedExercise, 
-  reps, 
+  amount, 
   isSpinning, 
   onSpin, 
   onComplete,
@@ -37,62 +37,19 @@ export function RouletteWheel({
     ? getDifficultyColor(selectedExercise.difficulty)
     : 'from-purple-500 to-purple-700';
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [time, setTime] = useState(0);
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setInterval> | null = null;
-    if (isRunning) {
-      timer = setInterval(() => {
-        setTime((prevTime) => prevTime + 10);
-      }, 10);
-    } else if (timer) {
-      clearInterval(timer);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isRunning]);
-
-  const handleStartStop = () => {
-    setIsRunning((prev) => !prev);
-  };
-
-  const handleReset = () => {
-    setTime(0);
-  };
-
-  const formatTime = (milliseconds: number) => {
-    const mins = Math.floor(milliseconds / 60000);
-    const secs = Math.floor((milliseconds % 60000) / 1000);
-    const ms = Math.floor((milliseconds % 1000) / 10);
-    return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="text-center space-y-6 bg-gray-800 p-8 rounded-lg shadow-xl border border-purple-500/20">
-      <div className="space-y-4">
-        <p className="text-lg font-bold text-purple-300">Temps : {formatTime(time)}</p>
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={handleStartStop}
-            className={`px-8 py-4 text-lg font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 ${
-              isRunning
-                ? 'bg-red-500 text-white hover:bg-red-600'
-                : 'bg-green-500 text-white hover:bg-green-600'
-            }`}
-          >
-            {isRunning ? 'Stop' : 'Go !'}
-          </button>
-          {!isRunning && time > 0 && (
-            <button
-              onClick={handleReset}
-              className="px-8 py-4 text-lg font-semibold rounded-full bg-gray-600 text-white hover:bg-gray-700 transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              Reset
-            </button>
-          )}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <Timer label="Durée totale" />
+        {selectedExercise?.measureType === 'time' && amount && (
+          <Timer
+            label="Temps restant"
+            initialTime={amount * 1000}
+            countDown
+            onComplete={onComplete}
+            autoStart
+          />
+        )}
       </div>
 
       <div
@@ -104,7 +61,9 @@ export function RouletteWheel({
           {selectedExercise ? (
             <div className="space-y-2">
               <h2 className="text-xl font-bold text-purple-200">{selectedExercise.name}</h2>
-              <p className="text-3xl font-bold text-purple-300">{reps} reps</p>
+              <p className="text-3xl font-bold text-purple-300">
+                {amount} {selectedExercise.measureType === 'reps' ? 'reps' : 'sec'}
+              </p>
               <p className="text-sm text-purple-400 italic">{selectedExercise.tag}</p>
               <p className={`text-sm font-medium capitalize
                 ${selectedExercise.difficulty === 'facile' ? 'text-green-400' : ''}

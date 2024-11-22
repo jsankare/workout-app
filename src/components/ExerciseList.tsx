@@ -8,12 +8,22 @@ interface Props {
 }
 
 const DIFFICULTY_RANGES = {
-  extreme: "10-25 reps",
-  difficile: "7-15 reps",
-  moyen: "6-9 reps",
-  facile: "5-8 reps",
-  primaire: "3-5 reps",
-  nouveau: "3 reps",
+  reps: {
+    extreme: "10-25 reps",
+    difficile: "7-15 reps",
+    moyen: "6-9 reps",
+    facile: "5-8 reps",
+    primaire: "3-5 reps",
+    nouveau: "3 reps",
+  },
+  time: {
+    extreme: "60-120 sec",
+    difficile: "45-90 sec",
+    moyen: "30-60 sec",
+    facile: "20-45 sec",
+    primaire: "15-30 sec",
+    nouveau: "15 sec",
+  }
 } as const;
 
 export function ExerciseList({ exercises, onDelete }: Props) {
@@ -97,7 +107,10 @@ export function ExerciseList({ exercises, onDelete }: Props) {
                         exercise.difficulty.slice(1)}
                     </span>
                     <span className="text-sm text-purple-400">
-                      {DIFFICULTY_RANGES[exercise.difficulty]}
+                      {DIFFICULTY_RANGES[exercise.measureType || 'reps'][exercise.difficulty]}
+                    </span>
+                    <span className="text-xs text-purple-400">
+                      ({(exercise.measureType || 'reps') === 'reps' ? 'Répétitions' : 'Temps'})
                     </span>
                   </div>
                 </div>

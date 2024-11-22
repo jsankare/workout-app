@@ -23,7 +23,12 @@ export async function initDB() {
 
 export async function getAllExercises(): Promise<Exercise[]> {
   const db = await initDB();
-  return db.getAll(STORE_NAME);
+  const exercises = await db.getAll(STORE_NAME);
+  // Migrate existing exercises to include measureType
+  return exercises.map(exercise => ({
+    ...exercise,
+    measureType: exercise.measureType || 'reps'
+  }));
 }
 
 export async function addExercise(exercise: Exercise): Promise<void> {

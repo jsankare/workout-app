@@ -5,6 +5,17 @@ interface Props {
   onClearLogs: () => void;
 }
 
+const formatTime = (seconds: number): string => {
+  if (seconds < 60) {
+    return `${seconds} sec`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return remainingSeconds > 0 
+    ? `${minutes}min ${remainingSeconds}sec`
+    : `${minutes}min`;
+};
+
 export function ExerciseLog({ logs, onClearLogs }: Props) {
   if (logs.length === 0) {
     return (
@@ -34,7 +45,11 @@ export function ExerciseLog({ logs, onClearLogs }: Props) {
                 <span className="ml-2 text-sm text-purple-400">(x{log.count})</span>
               )}
             </div>
-            <span className="font-bold text-purple-300">{log.totalReps} reps</span>
+            <span className="font-bold text-purple-300">
+              {log.measureType === 'time' 
+                ? formatTime(log.totalAmount)
+                : `${log.totalAmount} reps`}
+            </span>
           </div>
         ))}
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
-import type { NewExercise, Difficulty } from '../types';
+import type { NewExercise, Difficulty, MeasureType } from '../types';
 
 interface Props {
   onAdd: (exercise: NewExercise) => void;
@@ -8,12 +8,22 @@ interface Props {
 }
 
 const DIFFICULTY_RANGES = {
-  extreme: '10-25 reps',
-  difficile: '7-15 reps',
-  moyen: '6-9 reps',
-  facile: '5-8 reps',
-  primaire: '3-5 reps',
-  nouveau: '3 reps',
+  reps: {
+    extreme: '10-25 reps',
+    difficile: '7-15 reps',
+    moyen: '6-9 reps',
+    facile: '5-8 reps',
+    primaire: '3-5 reps',
+    nouveau: '3 reps',
+  },
+  time: {
+    extreme: '60-120 sec',
+    difficile: '45-90 sec',
+    moyen: '30-60 sec',
+    facile: '20-45 sec',
+    primaire: '15-30 sec',
+    nouveau: '15 sec',
+  }
 } as const;
 
 const DIFFICULTIES: Difficulty[] = ['nouveau', 'primaire', 'facile', 'moyen', 'difficile', 'extreme'];
@@ -23,13 +33,14 @@ export function ExerciseForm({ onAdd, existingTags }: Props) {
   const [difficulty, setDifficulty] = useState<Difficulty>('moyen');
   const [tagInput, setTagInput] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
+  const [measureType, setMeasureType] = useState<MeasureType>('reps');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || (!selectedTag && !tagInput)) return;
 
     const finalTag = selectedTag || tagInput;
-    onAdd({ name, tag: finalTag, difficulty });
+    onAdd({ name, tag: finalTag, difficulty, measureType });
     setName('');
     setTagInput('');
     setSelectedTag('');
@@ -50,6 +61,42 @@ export function ExerciseForm({ onAdd, existingTags }: Props) {
           placeholder="Pompes, abdos, etc .."
           required
         />
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-purple-300">
+          Type de mesure
+        </label>
+        <div className="grid grid-cols-2 gap-4">
+          {(['reps', 'time'] as const).map((type) => (
+            <label
+              key={type}
+              className={`
+                flex items-center justify-center p-3 rounded-lg cursor-pointer
+                border-2 transition-all
+                ${
+                  measureType === type
+                    ? 'border-purple-500 bg-purple-900/50 text-purple-300'
+                    : 'border-gray-700 hover:border-purple-500/50'
+                }
+              `}
+            >
+              <input
+                type="radio"
+                name="measureType"
+                value={type}
+                checked={measureType === type}
+                onChange={(e) => setMeasureType(e.target.value as MeasureType)}
+                className="sr-only"
+              />
+              <div className="text-center">
+                <div className="font-medium capitalize text-purple-200">
+                  {type === 'reps' ? 'Répétitions' : 'Temps'}
+                </div>
+              </div>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -121,7 +168,7 @@ export function ExerciseForm({ onAdd, existingTags }: Props) {
               />
               <div className="text-center">
                 <div className="font-medium capitalize text-purple-200">{level}</div>
-                <div className="text-xs text-purple-400">{DIFFICULTY_RANGES[level]}</div>
+                <div className="text-xs text-purple-400">{DIFFICULTY_RANGES[measureType][level]}</div>
               </div>
             </label>
           ))}
