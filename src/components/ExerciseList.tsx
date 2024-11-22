@@ -86,21 +86,23 @@ export function ExerciseList({ exercises, onDelete }: Props) {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-medium text-purple-200">{exercise.name}</h3>
-                  <p className="text-sm text-purple-400 italic">Tag : {exercise.tag}</p>
+                  <span className="inline-block mt-2 px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">
+                    {exercise.tag}
+                  </span>
                   <div className="flex items-center gap-2 mt-2">
                     <span
                       className={`text-sm px-2 py-0.5 rounded-full ${
                         exercise.difficulty === "facile"
-                          ? "bg-green-900/50 text-green-300"
+                          ? "bg-green-900/50 text-green-300 border border-green-500/30"
                           : exercise.difficulty === "moyen"
-                          ? "bg-yellow-900/50 text-yellow-300"
+                          ? "bg-yellow-900/50 text-yellow-300 border border-yellow-500/30"
                           : exercise.difficulty === "difficile"
-                          ? "bg-orange-900/50 text-orange-300"
+                          ? "bg-orange-900/50 text-orange-300 border border-orange-500/30"
                           : exercise.difficulty === "extreme"
-                          ? "bg-red-900/50 text-red-300"
+                          ? "bg-red-900/50 text-red-300 border border-red-500/30"
                           : exercise.difficulty === "primaire"
-                          ? "bg-blue-900/50 text-blue-300"
-                          : "bg-gray-900/50 text-gray-300"
+                          ? "bg-blue-900/50 text-blue-300 border border-blue-500/30"
+                          : "bg-gray-900/50 text-gray-300 border border-gray-500/30"
                       }`}
                     >
                       {exercise.difficulty.charAt(0).toUpperCase() +

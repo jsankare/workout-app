@@ -5,10 +5,9 @@ import { ExerciseList } from './components/ExerciseList';
 import { RouletteWheel } from './components/RouletteWheel';
 import { ExerciseLog } from './components/ExerciseLog';
 import { TagFilter } from './components/Tagfilter';
+import { Achievements } from './components/Achievements';
 import { getAllExercises, addExercise, deleteExercise } from './db';
-import type { Exercise, NewExercise, Difficulty, ExerciseLog as ExerciseLogType, MeasureType } from './types';
-
-const SPIN_DURATION = 2000;
+import type { Exercise, NewExercise, Difficulty, ExerciseLog as ExerciseLogType, MeasureType, Achievement } from './types';
 
 const DIFFICULTY_RANGES = {
   reps: {
@@ -29,6 +28,36 @@ const DIFFICULTY_RANGES = {
   }
 } as const;
 
+const INITIAL_ACHIEVEMENTS: Achievement[] = [
+  {
+    id: 'first-workout',
+    title: 'Premier pas',
+    description: 'Complétez votre premier exercice',
+    icon: '🎯',
+    requirement: 1,
+    currentProgress: 0,
+    category: 'reps'
+  },
+  {
+    id: 'variety-master',
+    title: 'Maître de la variété',
+    description: 'Essayez 10 exercices différents',
+    icon: '🎨',
+    requirement: 10,
+    currentProgress: 0,
+    category: 'variety'
+  },
+  {
+    id: 'endurance-king',
+    title: 'Roi de l\'endurance',
+    description: 'Accumulez 1000 répétitions',
+    icon: '👑',
+    requirement: 1000,
+    currentProgress: 0,
+    category: 'reps'
+  }
+];
+
 function App() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
@@ -39,6 +68,7 @@ function App() {
   const [excludedTags, setExcludedTags] = useState<string[]>([]);
   const [logs, setLogs] = useState<ExerciseLogType[]>([]);
   const [existingTags, setExistingTags] = useState<string[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
 
   useEffect(() => {
     const loadExercises = async () => {
@@ -110,7 +140,7 @@ function App() {
       setSelectedExercise(randomExercise);
       setAmount(randomAmount);
       setIsSpinning(false);
-    }, SPIN_DURATION);
+    }, 2000);
   }, [filteredExercises, isSpinning]);
 
   const handleCompleteExercise = () => {
@@ -132,7 +162,8 @@ function App() {
         name: selectedExercise.name,
         totalAmount: amount,
         measureType: selectedExercise.measureType,
-        count: 1
+        count: 1,
+        timestamp: Date.now()
       }];
     });
 
@@ -150,53 +181,78 @@ function App() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-purple-300">Chargement des exercices ..</div>
+        <div className="animate-pulse text-purple-300 text-lg">
+          Chargement des exercices...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 py-12 px-4">
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-purple-300 mb-2">Workout Roulette</h1>
-        <p className="text-purple-200 opacity-75">Tournez la roue et effectuez les exercices, puis recommencez !</p>
-      </header>
+    <div className="min-h-screen bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <header className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-purple-300 mb-3 tracking-tight">
+            Workout Roulette
+          </h1>
+          <p className="text-purple-200/80 text-lg max-w-2xl mx-auto">
+            Tournez la roue et effectuez les exercices, puis recommencez !
+          </p>
+        </header>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-8">
-          <ExerciseForm onAdd={handleAddExercise} existingTags={existingTags} />
-          <ExerciseLog logs={logs} onClearLogs={handleClearLogs} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* Main workout section */}
+          <div className="lg:order-2 space-y-6">
+            <div className="sticky top-6">
+              <RouletteWheel
+                selectedExercise={selectedExercise}
+                filteredExercises={filteredExercises}
+                amount={amount}
+                isSpinning={isSpinning}
+                onSpin={handleSpin}
+                onComplete={handleCompleteExercise}
+                onSkip={handleSkipExercise}
+              />
+              <div className="mt-6">
+                <TagFilter
+                  existingTags={existingTags}
+                  selectedTag={selectedTag}
+                  excludedTags={excludedTags}
+                  onSelectTag={setSelectedTag}
+                  onToggleExcludeTag={(tag) => {
+                    setExcludedTags(prev =>
+                      prev.includes(tag)
+                        ? prev.filter(t => t !== tag)
+                        : [...prev, tag]
+                    );
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Side panel */}
+          <div className="lg:order-1 space-y-6">
+            <div className="bg-gray-800/50 backdrop-blur supports-[backdrop-filter]:bg-gray-800/50 rounded-xl p-6">
+              <h2 className="text-2xl font-semibold text-purple-300 mb-6">
+                Gérer vos exercices
+              </h2>
+              <div className="space-y-6">
+                <ExerciseForm onAdd={handleAddExercise} existingTags={existingTags} />
+                <ExerciseLog logs={logs} onClearLogs={handleClearLogs} />
+                <Achievements achievements={achievements} />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-8">
-          <RouletteWheel
-            selectedExercise={selectedExercise}
-            filteredExercises={filteredExercises}
-            amount={amount}
-            isSpinning={isSpinning}
-            onSpin={handleSpin}
-            onComplete={handleCompleteExercise}
-            onSkip={handleSkipExercise}
-          />
-
-          <TagFilter
-            existingTags={existingTags}
-            selectedTag={selectedTag}
-            excludedTags={excludedTags}
-            onSelectTag={setSelectedTag}
-            onToggleExcludeTag={(tag) => {
-              setExcludedTags(prev =>
-                prev.includes(tag)
-                  ? prev.filter(t => t !== tag)
-                  : [...prev, tag]
-              );
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="mt-12">
-        <ExerciseList exercises={exercises} onDelete={handleDeleteExercise} />
+        {/* Exercise list section */}
+        <section className="rounded-xl bg-gray-800/50 backdrop-blur supports-[backdrop-filter]:bg-gray-800/50 p-6">
+          <h2 className="text-2xl font-semibold text-purple-300 mb-6">
+            Liste des exercices
+          </h2>
+          <ExerciseList exercises={exercises} onDelete={handleDeleteExercise} />
+        </section>
       </div>
     </div>
   );

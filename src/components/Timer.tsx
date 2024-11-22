@@ -66,13 +66,13 @@ export function Timer({
   };
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20">
+    <div className="bg-gray-800/80 backdrop-blur p-4 rounded-lg border border-purple-500/20 shadow-lg">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-purple-300 font-medium">{label}</h3>
         <div className="flex gap-2">
           <button
             onClick={toggleTimer}
-            className={`p-2 rounded-full ${
+            className={`p-2 rounded-full transition-all duration-200 transform hover:scale-105 ${
               isRunning 
                 ? 'bg-red-500 hover:bg-red-600' 
                 : 'bg-green-500 hover:bg-green-600'
@@ -82,7 +82,7 @@ export function Timer({
           </button>
           <button
             onClick={handleReset}
-            className="p-2 rounded-full bg-gray-700 hover:bg-gray-600"
+            className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-all duration-200 transform hover:scale-105"
           >
             <RotateCcw size={16} />
           </button>
